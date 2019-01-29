@@ -1,5 +1,9 @@
 package sample;
 
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -9,12 +13,14 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
 
+    private Timeline timeline;
     @FXML
     private Label passengerLabel;
 
@@ -45,7 +51,19 @@ public class Controller implements Initializable {
         currentLevelTextfield.setDisable(true);
     }
 
-    public void moveElevator(){
+    public void startAnimationButtonPressed(ActionEvent actionEvent) {
+        timeline = new Timeline(new KeyFrame(
+                Duration.millis(1000),
+                ae -> onTimerTick()));
+        timeline.setCycleCount(Animation.INDEFINITE);
+        timeline.playFromStart();
+    }
 
+    public void enterLiftButtonPressed(ActionEvent actionEvent) {
+
+    }
+
+    private void onTimerTick() {
+        elevatorRectangle.setY( elevatorRectangle.getY() - 20);
     }
 }
