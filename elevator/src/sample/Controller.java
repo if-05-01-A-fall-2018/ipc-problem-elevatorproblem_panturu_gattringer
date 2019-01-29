@@ -5,6 +5,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.paint.Paint;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 
@@ -39,7 +41,11 @@ public class Controller implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        this.passengerTextfield.setEditable(false);
-        this.currentLevelTextfield.setEditable(false);
+        passengerTextfield.setDisable(true);
+        currentLevelTextfield.setDisable(true);
+    }
+
+    public void moveElevator(){
+
     }
 }
