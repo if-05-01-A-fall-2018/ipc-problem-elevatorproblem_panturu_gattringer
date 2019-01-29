@@ -12,7 +12,7 @@
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.shape.Rectangle?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
    <center>
       <GridPane BorderPane.alignment="CENTER">
         <columnConstraints>
@@ -57,8 +57,8 @@
             </GridPane>
             <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                <children>
-                  <Button fx:id="startButton" layoutX="162.0" layoutY="15.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="132.0" text="Start Animation" />
-                  <Button fx:id="enterLift" layoutX="20.0" layoutY="15.0" mnemonicParsing="false" text="I want to enter! " />
+                  <Button fx:id="startButton" layoutX="162.0" layoutY="15.0" mnemonicParsing="false" onAction="#startAnimationButtonPressed" prefHeight="25.0" prefWidth="132.0" text="Start Animation" />
+                  <Button fx:id="enterLift" layoutX="20.0" layoutY="15.0" mnemonicParsing="false" onAction="#enterLiftButtonPressed" text="I want to enter! " />
                </children>
             </Pane>
             <Pane prefHeight="200.0" prefWidth="200.0">
