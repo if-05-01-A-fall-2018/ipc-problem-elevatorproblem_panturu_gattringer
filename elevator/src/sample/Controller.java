@@ -1,5 +1,7 @@
 package sample;
 
+import javafx.animation.Timeline;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -38,14 +40,24 @@ public class Controller implements Initializable {
 
     @FXML
     private Rectangle elevatorRectangle;
+    private Timeline timeline;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        passengerTextfield.setDisable(true);
-        currentLevelTextfield.setDisable(true);
+        this.passengerTextfield.setEditable(true);
+        this.currentLevelTextfield.setEditable(true);
     }
 
     public void moveElevator(){
+
+    }
+
+    public void enterLiftButtonPressed(ActionEvent actionEvent) {
+        Passenger p = new Passenger();
+        Lift.getInstance().addObserver(p);
+    }
+
+    public void startAnimationButtonPressed(ActionEvent actionEvent) {
 
     }
 }
