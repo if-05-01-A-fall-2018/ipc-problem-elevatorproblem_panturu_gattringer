@@ -14,13 +14,17 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
+import jdk.nashorn.internal.runtime.regexp.joni.constants.TargetInfo;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Observable;
 import java.util.ResourceBundle;
 
-public class Controller implements Initializable {
+public class Controller extends Observable implements Initializable{
 
-    private Timeline timeline;
+    private Timeline timeline = null;
     @FXML
     private Label passengerLabel;
 
@@ -44,7 +48,7 @@ public class Controller implements Initializable {
 
     @FXML
     private Rectangle elevatorRectangle;
-    private Timeline timeline;
+    private List<Passenger> waitingToEnter;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -53,24 +57,32 @@ public class Controller implements Initializable {
     }
 
     public void startAnimationButtonPressed(ActionEvent actionEvent) {
-        timeline = new Timeline(new KeyFrame(
-                Duration.millis(1000),
-                ae -> onTimerTick()));
-        timeline.setCycleCount(Animation.INDEFINITE);
-        timeline.playFromStart();
+        if(timeline == null || timeline.getStatus() == Timeline.Status.STOPPED){
+            timeline = new Timeline(new KeyFrame(
+                    Duration.millis(1000),
+                    ae -> onTimerTick()));
+            timeline.setCycleCount(Animation.INDEFINITE);
+            timeline.playFromStart();
+            this.startButton.setText("Stop");
+        }
+        else if(timeline.getStatus() == Timeline.Status.RUNNING){
+            this.startButton.setText("Start");
+            timeline.stop();
+        }
     }
 
 
     public void enterLiftButtonPressed(ActionEvent actionEvent) {
         Passenger p = new Passenger();
-        Lift.getInstance().addObserver(p);
-    }
-
-    public void startAnimationButtonPressed(ActionEvent actionEvent) {
-
+        if(waitingToEnter == null)waitingToEnter = new ArrayList<>();
+        waitingToEnter.add(p);
     }
 
     private void onTimerTick() {
         elevatorRectangle.setY( elevatorRectangle.getY() - 20);
+        waitingToEnter.stream()
+                .forEach(x-> this.addObserver(x));
+        this.notifyObservers();
+        this.passengerTextfield.setText(""+ this.countObservers());
     }
 }

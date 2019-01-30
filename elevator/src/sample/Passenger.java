@@ -9,13 +9,14 @@ public class Passenger implements Observer {
 
     public Passenger() {
         Random rand = new Random();
-        this.howManyLevelsLeft = rand.nextInt(50) + 1;
+        //this.howManyLevelsLeft = rand.nextInt(50) + 1;
+        howManyLevelsLeft = 2;
     }
 
     @Override
     public void update(Observable o, Object arg) {
         howManyLevelsLeft--;
-        if(howManyLevelsLeft == 0){
+        if(howManyLevelsLeft == 0) {
             o.deleteObserver(this);
         }
     }
