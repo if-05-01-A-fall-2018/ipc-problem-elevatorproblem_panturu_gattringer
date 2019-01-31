@@ -9,6 +9,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
@@ -24,6 +25,8 @@ import java.util.ResourceBundle;
 
 public class Controller extends Observable implements Initializable{
 
+    public GridPane gripdane;
+    private int direction = -20;
     private Timeline timeline = null;
     @FXML
     private Label passengerLabel;
@@ -79,10 +82,14 @@ public class Controller extends Observable implements Initializable{
     }
 
     private void onTimerTick() {
-        elevatorRectangle.setY( elevatorRectangle.getY() - 20);
-        waitingToEnter.stream()
-                .forEach(x-> this.addObserver(x));
-        this.notifyObservers();
+        elevatorRectangle.setY( elevatorRectangle.getY() + direction);
+        if(waitingToEnter.size() != 0) {
+            waitingToEnter.stream()
+                    .forEach(x -> this.addObserver(x));
+            waitingToEnter.clear();
+        }
         this.passengerTextfield.setText(""+ this.countObservers());
+        this.setChanged();
+        this.notifyObservers();
     }
 }

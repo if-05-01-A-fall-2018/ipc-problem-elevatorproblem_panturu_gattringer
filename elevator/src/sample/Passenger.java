@@ -9,8 +9,7 @@ public class Passenger implements Observer {
 
     public Passenger() {
         Random rand = new Random();
-        //this.howManyLevelsLeft = rand.nextInt(50) + 1;
-        howManyLevelsLeft = 2;
+        this.howManyLevelsLeft = rand.nextInt(10) + 1;
     }
 
     @Override
