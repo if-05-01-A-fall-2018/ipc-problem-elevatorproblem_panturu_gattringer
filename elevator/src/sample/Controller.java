@@ -27,6 +27,7 @@ public class Controller extends Observable implements Initializable{
 
     public GridPane gripdane;
     private int direction = -20;
+    private boolean isLiftGoingUp = true;
     private Timeline timeline = null;
     @FXML
     private Label passengerLabel;
@@ -62,14 +63,16 @@ public class Controller extends Observable implements Initializable{
     public void startAnimationButtonPressed(ActionEvent actionEvent) {
         if(timeline == null || timeline.getStatus() == Timeline.Status.STOPPED){
             timeline = new Timeline(new KeyFrame(
-                    Duration.millis(1000),
+                    Duration.millis(1500),
                     ae -> onTimerTick()));
             timeline.setCycleCount(Animation.INDEFINITE);
+            elevatorRectangle.setY(elevatorRectangle.getY());
             timeline.playFromStart();
             this.startButton.setText("Stop");
         }
         else if(timeline.getStatus() == Timeline.Status.RUNNING){
             this.startButton.setText("Start");
+            elevatorRectangle.setY(elevatorRectangle.getY());
             timeline.stop();
         }
     }
@@ -82,7 +85,7 @@ public class Controller extends Observable implements Initializable{
     }
 
     private void onTimerTick() {
-        elevatorRectangle.setY( elevatorRectangle.getY() + direction);
+        moveElevator();
         if(waitingToEnter!= null && !waitingToEnter.isEmpty()){
             waitingToEnter.stream()
                     .forEach(x -> this.addObserver(x));
@@ -91,5 +94,35 @@ public class Controller extends Observable implements Initializable{
         this.passengerTextfield.setText(""+ this.countObservers());
         this.setChanged();
         this.notifyObservers();
+    }
+
+    private void moveElevator() {
+        //when the lift is up, it should now move down
+        if(elevatorRectangle.getY() == -260){
+            isLiftGoingUp = false;
+            elevatorRectangle.setY( elevatorRectangle.getY() - direction);
+            System.out.println(elevatorRectangle.getY());
+        }
+        //keep on going down until Y = -20
+        else if (elevatorRectangle.getY() > -280 && elevatorRectangle.getY() <= -20 && isLiftGoingUp == false){
+            elevatorRectangle.setY( elevatorRectangle.getY() - direction);
+            System.out.println(elevatorRectangle.getY());
+        }
+        //when done going down, the lift goes back up
+        else if(elevatorRectangle.getY() == 0 && isLiftGoingUp == false){
+            isLiftGoingUp = true;
+            elevatorRectangle.setY( elevatorRectangle.getY() + direction);
+            System.out.println(elevatorRectangle.getY());
+        }
+        // start going up
+        else if (elevatorRectangle.getY() == 0 && isLiftGoingUp == true){
+            elevatorRectangle.setY( elevatorRectangle.getY() + direction);
+            System.out.println(elevatorRectangle.getY());
+        }
+        //go up
+        else {
+            elevatorRectangle.setY(elevatorRectangle.getY() + direction);
+            System.out.println(elevatorRectangle.getY());
+        }
     }
 }
