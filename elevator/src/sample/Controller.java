@@ -83,7 +83,7 @@ public class Controller extends Observable implements Initializable{
 
     private void onTimerTick() {
         elevatorRectangle.setY( elevatorRectangle.getY() + direction);
-        if(waitingToEnter.size() != 0) {
+        if(waitingToEnter!= null && !waitingToEnter.isEmpty()){
             waitingToEnter.stream()
                     .forEach(x -> this.addObserver(x));
             waitingToEnter.clear();
