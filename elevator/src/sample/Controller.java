@@ -75,7 +75,7 @@ public class Controller extends Observable implements Initializable{
         mainteanceStart = false;
         if(timeline == null || timeline.getStatus() == Timeline.Status.STOPPED){
             timeline = new Timeline(new KeyFrame(
-                    Duration.millis(1000),
+                    Duration.millis(2000),
                     ae -> onTimerTick()));
             timeline.setCycleCount(Animation.INDEFINITE);
             elevatorRectangle.setY(elevatorRectangle.getY());
@@ -153,16 +153,8 @@ public class Controller extends Observable implements Initializable{
             System.out.println(elevatorRectangle.getY());
         }
         // start going up
-        else if (elevatorRectangle.getY() == 0 && isLiftGoingUp == true){
+        else{
             elevatorRectangle.setY( elevatorRectangle.getY() + direction);
-            System.out.println(elevatorRectangle.getY());
-            countLevel++;
-            currentLevelTextfield.setText(Integer.toString(countLevel));
-            System.out.println("Level: " + countLevel);
-        }
-        //go up
-        else {
-            elevatorRectangle.setY(elevatorRectangle.getY() + direction);
             System.out.println(elevatorRectangle.getY());
             countLevel++;
             currentLevelTextfield.setText(Integer.toString(countLevel));
