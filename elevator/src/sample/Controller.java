@@ -27,6 +27,7 @@ public class Controller extends Observable implements Initializable{
     public TextField careTakerTicksTillMaintanceTextField;
     public TextField peopleEnterPerTickTextField;
     public TextField ticksUntilMaintanceEnterTextFiled;
+    public Label inMantainceLabel;
     private int direction = -20;
     private boolean isLiftGoingUp = true;
     private Timeline timeline = null;
@@ -73,10 +74,9 @@ public class Controller extends Observable implements Initializable{
     }
 
     public void startAnimationButtonPressed(ActionEvent actionEvent) {
-        mainteanceStart = false;
         if(timeline == null || timeline.getStatus() == Timeline.Status.STOPPED){
             timeline = new Timeline(new KeyFrame(
-                    Duration.millis(2000),
+                    Duration.millis(1000),
                     ae -> onTimerTick()));
             timeline.setCycleCount(Animation.INDEFINITE);
             elevatorRectangle.setY(elevatorRectangle.getY());
@@ -105,15 +105,20 @@ public class Controller extends Observable implements Initializable{
     }
 
     private void onTimerTick() {
-        if(!this.ticksUntilMaintanceEnterTextFiled.getText().equals(this.lastCare)){ lastCare = this.ticksUntilMaintanceEnterTextFiled.getText();
-            this.careTakerTicksTillMaintanceTextField.setText(lastCare);}
+        if(!this.ticksUntilMaintanceEnterTextFiled.getText().equals(this.lastCare)) {
+            lastCare = this.ticksUntilMaintanceEnterTextFiled.getText();
+            this.careTakerTicksTillMaintanceTextField.setText(lastCare);
+        }
         enterLiftButtonPressed();
+        System.out.println(mainteanceStart);
         if(!mainteanceStart){
             this.careTakerTicksTillMaintanceTextField.setText(Integer.parseInt(careTakerTicksTillMaintanceTextField.getText()) -1 +"");
             if(careTakerTicksTillMaintanceTextField.getText().equals("0")) {
                 mainteanceStart = true;
                 Random rand = new Random();
                 this.roundsTillLeave = rand.nextInt(10) + 1;
+                System.out.println("Maintance time:" + this.roundsTillLeave);
+                this.inMantainceLabel.setText("IN MANTAINANCE!!!");
             }
             moveElevator();
         }
@@ -121,16 +126,17 @@ public class Controller extends Observable implements Initializable{
             waitingToEnter.stream()
                     .forEach(x -> this.addObserver(x));
             waitingToEnter.clear();
-            this.setChanged();
-            this.notifyObservers();
         }
         else if(mainteanceStart && this.countObservers() == 0){
                 roundsTillLeave--;
                 if(roundsTillLeave == 0) {
                     mainteanceStart = false;
+                    this.inMantainceLabel.setText("");
                     this.careTakerTicksTillMaintanceTextField.setText( this.ticksUntilMaintanceEnterTextFiled.getText());
                 }
         }
+        this.setChanged();
+        this.notifyObservers();
         this.passengerTextfield.setText(""+ this.countObservers());
     }
 
