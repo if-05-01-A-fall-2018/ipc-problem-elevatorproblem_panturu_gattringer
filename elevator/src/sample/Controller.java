@@ -18,17 +18,19 @@ import javafx.util.Duration;
 import jdk.nashorn.internal.runtime.regexp.joni.constants.TargetInfo;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Observable;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class Controller extends Observable implements Initializable{
 
     public GridPane gripdane;
+    public TextField peopleWaitingToEnterTextField;
+    public TextField careTakerTicksTillMaintanceTextField;
+    public TextField peopleEnterPerTickTextField;
+    public TextField ticksUntilMaintanceEnterTextFiled;
     private int direction = -20;
     private boolean isLiftGoingUp = true;
     private Timeline timeline = null;
+    private String lastCare;
     @FXML
     private Label passengerLabel;
 
@@ -49,21 +51,32 @@ public class Controller extends Observable implements Initializable{
 
     @FXML
     private Line verticalLine;
+    private boolean mainteanceStart = false;
 
     @FXML
     private Rectangle elevatorRectangle;
     private List<Passenger> waitingToEnter;
 
+
+    private int roundsTillLeave = 0;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         this.passengerTextfield.setEditable(true);
         this.currentLevelTextfield.setEditable(true);
+        this.ticksUntilMaintanceEnterTextFiled.setText("5");
+        this.passengerTextfield.setDisable(true);
+        this.careTakerTicksTillMaintanceTextField.setDisable(true);
+        this.currentLevelTextfield.setDisable(true);
+        this.peopleWaitingToEnterTextField.setDisable(true);
+
     }
 
     public void startAnimationButtonPressed(ActionEvent actionEvent) {
+        mainteanceStart = false;
         if(timeline == null || timeline.getStatus() == Timeline.Status.STOPPED){
             timeline = new Timeline(new KeyFrame(
-                    Duration.millis(1500),
+                    Duration.millis(2000),
                     ae -> onTimerTick()));
             timeline.setCycleCount(Animation.INDEFINITE);
             elevatorRectangle.setY(elevatorRectangle.getY());
@@ -77,23 +90,46 @@ public class Controller extends Observable implements Initializable{
         }
     }
 
+    public void enterLiftButtonPressed() {
+        if (waitingToEnter == null) waitingToEnter = new ArrayList<>();
+        try {
+            for (int i = 0; i < Integer.parseInt(peopleEnterPerTickTextField.getText()); i++) {
+                Passenger p = new Passenger();
+                waitingToEnter.add(p);
+            }
+        }
+        catch(Exception e){
 
-    public void enterLiftButtonPressed(ActionEvent actionEvent) {
-        Passenger p = new Passenger();
-        if(waitingToEnter == null)waitingToEnter = new ArrayList<>();
-        waitingToEnter.add(p);
+        }
+        this.peopleWaitingToEnterTextField.setText(waitingToEnter.size()+"");
     }
 
     private void onTimerTick() {
-        moveElevator();
-        if(waitingToEnter!= null && !waitingToEnter.isEmpty()){
+        if(!this.ticksUntilMaintanceEnterTextFiled.getText().equals(this.lastCare))this.careTakerTicksTillMaintanceTextField.setText(this.ticksUntilMaintanceEnterTextFiled.getText());
+        enterLiftButtonPressed();
+        if(!mainteanceStart){
+            this.careTakerTicksTillMaintanceTextField.setText(Integer.parseInt(careTakerTicksTillMaintanceTextField.getText()) -1 +"");
+            if(careTakerTicksTillMaintanceTextField.getText() == "0") {
+                mainteanceStart = true;
+                Random rand = new Random();
+                this.roundsTillLeave = rand.nextInt(10) + 1;
+            }
+            moveElevator();
+        }
+        if(waitingToEnter!= null && !waitingToEnter.isEmpty() && !mainteanceStart){
             waitingToEnter.stream()
                     .forEach(x -> this.addObserver(x));
             waitingToEnter.clear();
+            this.setChanged();
+            this.notifyObservers();
+        }
+        else if(mainteanceStart && this.countObservers() == 0){
+                roundsTillLeave--;
+                if(roundsTillLeave == 0) {
+                    mainteanceStart = false;
+                }
         }
         this.passengerTextfield.setText(""+ this.countObservers());
-        this.setChanged();
-        this.notifyObservers();
     }
 
     private void moveElevator() {
