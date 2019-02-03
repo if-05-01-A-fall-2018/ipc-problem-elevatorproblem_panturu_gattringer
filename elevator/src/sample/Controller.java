@@ -30,6 +30,7 @@ public class Controller extends Observable implements Initializable{
     private int direction = -20;
     private boolean isLiftGoingUp = true;
     private Timeline timeline = null;
+    int countLevel = 0;
     @FXML
     private Label passengerLabel;
 
@@ -68,14 +69,13 @@ public class Controller extends Observable implements Initializable{
         this.passengerTextfield.setDisable(true);
         this.currentLevelTextfield.setDisable(true);
         this.peopleWaitingToEnterTextField.setDisable(true);
-
     }
 
     public void startAnimationButtonPressed(ActionEvent actionEvent) {
         mainteanceStart = false;
         if(timeline == null || timeline.getStatus() == Timeline.Status.STOPPED){
             timeline = new Timeline(new KeyFrame(
-                    Duration.millis(2000),
+                    Duration.millis(1000),
                     ae -> onTimerTick()));
             timeline.setCycleCount(Animation.INDEFINITE);
             elevatorRectangle.setY(elevatorRectangle.getY());
@@ -99,9 +99,10 @@ public class Controller extends Observable implements Initializable{
     }
 
     private void onTimerTick() {
-        moveElevator();
+        if (mainteanceStart == false){
+            moveElevator();
+        }
         enterLiftButtonPressed();
-        elevatorRectangle.setY( elevatorRectangle.getY() + direction);
         if(!mainteanceStart){
             this.careTakerTicksTillMaintanceTextField.setText(Integer.parseInt(careTakerTicksTillMaintanceTextField.getText()) -1 +"");
             if(careTakerTicksTillMaintanceTextField.getText() == "0") {
@@ -129,28 +130,43 @@ public class Controller extends Observable implements Initializable{
         if(elevatorRectangle.getY() == -260){
             isLiftGoingUp = false;
             elevatorRectangle.setY( elevatorRectangle.getY() - direction);
-            System.out.println(elevatorRectangle.getY());
+            countLevel--;
+            currentLevelTextfield.setText(Integer.toString(countLevel));
+            System.out.println("Level: " + countLevel);
+            System.out.println("Y: " + elevatorRectangle.getY());
         }
         //keep on going down until Y = -20
         else if (elevatorRectangle.getY() > -280 && elevatorRectangle.getY() <= -20 && isLiftGoingUp == false){
             elevatorRectangle.setY( elevatorRectangle.getY() - direction);
+            countLevel--;
+            currentLevelTextfield.setText(Integer.toString(countLevel));
+            System.out.println("Level: " + countLevel);
             System.out.println(elevatorRectangle.getY());
         }
         //when done going down, the lift goes back up
         else if(elevatorRectangle.getY() == 0 && isLiftGoingUp == false){
             isLiftGoingUp = true;
             elevatorRectangle.setY( elevatorRectangle.getY() + direction);
+            countLevel++;
+            currentLevelTextfield.setText(Integer.toString(countLevel));
+            System.out.println("Level: " + countLevel);
             System.out.println(elevatorRectangle.getY());
         }
         // start going up
         else if (elevatorRectangle.getY() == 0 && isLiftGoingUp == true){
             elevatorRectangle.setY( elevatorRectangle.getY() + direction);
             System.out.println(elevatorRectangle.getY());
+            countLevel++;
+            currentLevelTextfield.setText(Integer.toString(countLevel));
+            System.out.println("Level: " + countLevel);
         }
         //go up
         else {
             elevatorRectangle.setY(elevatorRectangle.getY() + direction);
             System.out.println(elevatorRectangle.getY());
+            countLevel++;
+            currentLevelTextfield.setText(Integer.toString(countLevel));
+            System.out.println("Level: " + countLevel);
         }
     }
 }
