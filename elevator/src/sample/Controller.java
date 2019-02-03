@@ -30,6 +30,7 @@ public class Controller extends Observable implements Initializable{
     private int direction = -20;
     private boolean isLiftGoingUp = true;
     private Timeline timeline = null;
+    private String lastCare;
     @FXML
     private Label passengerLabel;
 
@@ -63,9 +64,9 @@ public class Controller extends Observable implements Initializable{
     public void initialize(URL location, ResourceBundle resources) {
         this.passengerTextfield.setEditable(true);
         this.currentLevelTextfield.setEditable(true);
-        this.ticksUntilMaintanceEnterTextFiled.setText("50");
-        this.careTakerTicksTillMaintanceTextField.setText("50");
+        this.ticksUntilMaintanceEnterTextFiled.setText("5");
         this.passengerTextfield.setDisable(true);
+        this.careTakerTicksTillMaintanceTextField.setDisable(true);
         this.currentLevelTextfield.setDisable(true);
         this.peopleWaitingToEnterTextField.setDisable(true);
 
@@ -90,18 +91,22 @@ public class Controller extends Observable implements Initializable{
     }
 
     public void enterLiftButtonPressed() {
-        for(int i = 0; i< Integer.parseInt(peopleEnterPerTickTextField.getText()); i++){
-        Passenger p = new Passenger();
-        if(waitingToEnter == null)waitingToEnter = new ArrayList<>();
-        waitingToEnter.add(p);
+        if (waitingToEnter == null) waitingToEnter = new ArrayList<>();
+        try {
+            for (int i = 0; i < Integer.parseInt(peopleEnterPerTickTextField.getText()); i++) {
+                Passenger p = new Passenger();
+                waitingToEnter.add(p);
+            }
+        }
+        catch(Exception e){
+
         }
         this.peopleWaitingToEnterTextField.setText(waitingToEnter.size()+"");
     }
 
     private void onTimerTick() {
-        moveElevator();
+        if(!this.ticksUntilMaintanceEnterTextFiled.getText().equals(this.lastCare))this.careTakerTicksTillMaintanceTextField.setText(this.ticksUntilMaintanceEnterTextFiled.getText());
         enterLiftButtonPressed();
-        elevatorRectangle.setY( elevatorRectangle.getY() + direction);
         if(!mainteanceStart){
             this.careTakerTicksTillMaintanceTextField.setText(Integer.parseInt(careTakerTicksTillMaintanceTextField.getText()) -1 +"");
             if(careTakerTicksTillMaintanceTextField.getText() == "0") {
@@ -109,6 +114,7 @@ public class Controller extends Observable implements Initializable{
                 Random rand = new Random();
                 this.roundsTillLeave = rand.nextInt(10) + 1;
             }
+            moveElevator();
         }
         if(waitingToEnter!= null && !waitingToEnter.isEmpty() && !mainteanceStart){
             waitingToEnter.stream()
@@ -119,7 +125,9 @@ public class Controller extends Observable implements Initializable{
         }
         else if(mainteanceStart && this.countObservers() == 0){
                 roundsTillLeave--;
-                if(roundsTillLeave == 0)mainteanceStart = false;
+                if(roundsTillLeave == 0) {
+                    mainteanceStart = false;
+                }
         }
         this.passengerTextfield.setText(""+ this.countObservers());
     }
