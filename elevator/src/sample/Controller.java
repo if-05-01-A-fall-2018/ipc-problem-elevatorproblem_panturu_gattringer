@@ -105,11 +105,12 @@ public class Controller extends Observable implements Initializable{
     }
 
     private void onTimerTick() {
-        if(!this.ticksUntilMaintanceEnterTextFiled.getText().equals(this.lastCare))this.careTakerTicksTillMaintanceTextField.setText(this.ticksUntilMaintanceEnterTextFiled.getText());
+        if(!this.ticksUntilMaintanceEnterTextFiled.getText().equals(this.lastCare)){ lastCare = this.ticksUntilMaintanceEnterTextFiled.getText();
+            this.careTakerTicksTillMaintanceTextField.setText(lastCare);}
         enterLiftButtonPressed();
         if(!mainteanceStart){
             this.careTakerTicksTillMaintanceTextField.setText(Integer.parseInt(careTakerTicksTillMaintanceTextField.getText()) -1 +"");
-            if(careTakerTicksTillMaintanceTextField.getText() == "0") {
+            if(careTakerTicksTillMaintanceTextField.getText().equals("0")) {
                 mainteanceStart = true;
                 Random rand = new Random();
                 this.roundsTillLeave = rand.nextInt(10) + 1;
@@ -127,6 +128,7 @@ public class Controller extends Observable implements Initializable{
                 roundsTillLeave--;
                 if(roundsTillLeave == 0) {
                     mainteanceStart = false;
+                    this.careTakerTicksTillMaintanceTextField.setText( this.ticksUntilMaintanceEnterTextFiled.getText());
                 }
         }
         this.passengerTextfield.setText(""+ this.countObservers());
