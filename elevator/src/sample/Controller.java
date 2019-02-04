@@ -9,30 +9,22 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Paint;
-import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
-import jdk.nashorn.internal.runtime.regexp.joni.constants.TargetInfo;
 
 import java.net.URL;
 import java.util.*;
 
 public class Controller extends Observable implements Initializable{
-
-    public GridPane gripdane;
-    public TextField peopleWaitingToEnterTextField;
-    public TextField careTakerTicksTillMaintanceTextField;
-    public TextField peopleEnterPerTickTextField;
-    public TextField ticksUntilMaintanceEnterTextFiled;
-    public Label inMantainceLabel;
     private int direction = -20;
     private boolean isLiftGoingUp = true;
     private Timeline timeline = null;
     private String lastCare;
-    int countLevel = 0;
+    private int countLevel = 0;
+    private boolean hasMaintenanceStarted = false;
+
     @FXML
     private Label passengerLabel;
 
@@ -49,28 +41,37 @@ public class Controller extends Observable implements Initializable{
     private Button startButton;
 
     @FXML
-    private Button enterLift;
+    public TextField peopleWaitingToEnterTextField;
+
+    @FXML
+    public TextField careTakerTicksTillMaintenanceTextField;
+
+    @FXML
+    public TextField peopleEnterPerTickTextField;
+
+    @FXML
+    public TextField ticksUntilMaintenanceEnterTextField;
+
+    @FXML
+    public Label inMaintenanceLabel;
 
     @FXML
     private Line verticalLine;
-    private boolean mainteanceStart = false;
 
     @FXML
     private Rectangle elevatorRectangle;
     private List<Passenger> waitingToEnter;
-
-
     private int roundsTillLeave = 0;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        this.passengerTextfield.setEditable(true);
-        this.currentLevelTextfield.setEditable(true);
-        this.ticksUntilMaintanceEnterTextFiled.setText("5");
-        this.passengerTextfield.setDisable(true);
-        this.careTakerTicksTillMaintanceTextField.setDisable(true);
         this.currentLevelTextfield.setDisable(true);
         this.peopleWaitingToEnterTextField.setDisable(true);
+        this.passengerTextfield.setDisable(true);
+        this.careTakerTicksTillMaintenanceTextField.setDisable(true);
+        this.ticksUntilMaintenanceEnterTextField.setText("5");
+        this.peopleEnterPerTickTextField.setText("2");
+
     }
 
     public void startAnimationButtonPressed(ActionEvent actionEvent) {
@@ -105,75 +106,82 @@ public class Controller extends Observable implements Initializable{
     }
 
     private void onTimerTick() {
-        if(!this.ticksUntilMaintanceEnterTextFiled.getText().equals(this.lastCare)) {
-            lastCare = this.ticksUntilMaintanceEnterTextFiled.getText();
-            this.careTakerTicksTillMaintanceTextField.setText(lastCare);
+        if(!this.ticksUntilMaintenanceEnterTextField.getText().equals(this.lastCare)) {
+            lastCare = this.ticksUntilMaintenanceEnterTextField.getText();
+            this.careTakerTicksTillMaintenanceTextField.setText(lastCare);
         }
         enterLiftButtonPressed();
-        System.out.println(mainteanceStart);
-        if(!mainteanceStart){
-            this.careTakerTicksTillMaintanceTextField.setText(Integer.parseInt(careTakerTicksTillMaintanceTextField.getText()) -1 +"");
-            if(careTakerTicksTillMaintanceTextField.getText().equals("0")) {
-                mainteanceStart = true;
-                Random rand = new Random();
-                this.roundsTillLeave = rand.nextInt(10) + 1;
-                System.out.println("Maintance time:" + this.roundsTillLeave);
-                this.inMantainceLabel.setText("IN MANTAINANCE!!!");
-            }
+        System.out.println(hasMaintenanceStarted);
+        if(!hasMaintenanceStarted){
+            this.careTakerTicksTillMaintenanceTextField.setText(Integer.parseInt(careTakerTicksTillMaintenanceTextField.getText()) -1 +"");
+            startMaintenance();
             moveElevator();
         }
-        if(waitingToEnter!= null && !waitingToEnter.isEmpty() && !mainteanceStart){
+        if(waitingToEnter!= null && !waitingToEnter.isEmpty() && !hasMaintenanceStarted){
             waitingToEnter.stream()
                     .forEach(x -> this.addObserver(x));
             waitingToEnter.clear();
         }
-        else if(mainteanceStart && this.countObservers() == 0){
-                roundsTillLeave--;
-                if(roundsTillLeave == 0) {
-                    mainteanceStart = false;
-                    this.inMantainceLabel.setText("");
-                    this.careTakerTicksTillMaintanceTextField.setText( this.ticksUntilMaintanceEnterTextFiled.getText());
-                }
+
+        else if(hasMaintenanceStarted && this.countObservers() == 0){
+            roundsTillLeave--;
+            elevatorRectangle.setFill(Paint.valueOf("#A85858"));
+            this.inMaintenanceLabel.setText("IN MAINTENANCE!!!");
+            stopMaintenance();
+        }
+        else if(hasMaintenanceStarted && this.countObservers() != 0){
+            this.inMaintenanceLabel.setText("People must go out!!!");
+            moveElevator();
         }
         this.setChanged();
         this.notifyObservers();
         this.passengerTextfield.setText(""+ this.countObservers());
     }
 
-    private void moveElevator() {
-        //when the lift is up, it should now move down
-        if(elevatorRectangle.getY() == -260){
+    private void moveElevator(){
+        if(elevatorRectangle.getY() == -260){                                                                           //when the lift is up, it should now move down
             isLiftGoingUp = false;
-            elevatorRectangle.setY( elevatorRectangle.getY() - direction);
+            elevatorRectangle.setY(elevatorRectangle.getY() - direction);
             countLevel--;
-            currentLevelTextfield.setText(Integer.toString(countLevel));
-            System.out.println("Level: " + countLevel);
-            System.out.println("Y: " + elevatorRectangle.getY());
         }
-        //keep on going down until Y = -20
-        else if (elevatorRectangle.getY() > -280 && elevatorRectangle.getY() <= -20 && isLiftGoingUp == false){
-            elevatorRectangle.setY( elevatorRectangle.getY() - direction);
+        else if (elevatorRectangle.getY() > -280 && elevatorRectangle.getY() <= -20 && isLiftGoingUp == false){         //keep on going down until Y = -20
+            elevatorRectangle.setY(elevatorRectangle.getY() - direction);
             countLevel--;
-            currentLevelTextfield.setText(Integer.toString(countLevel));
-            System.out.println("Level: " + countLevel);
-            System.out.println(elevatorRectangle.getY());
         }
-        //when done going down, the lift goes back up
-        else if(elevatorRectangle.getY() == 0 && isLiftGoingUp == false){
+        else if(elevatorRectangle.getY() == 0 && isLiftGoingUp == false){                                               //when done going down, the lift goes back up
             isLiftGoingUp = true;
-            elevatorRectangle.setY( elevatorRectangle.getY() + direction);
+            elevatorRectangle.setY(elevatorRectangle.getY() + direction);
             countLevel++;
-            currentLevelTextfield.setText(Integer.toString(countLevel));
-            System.out.println("Level: " + countLevel);
-            System.out.println(elevatorRectangle.getY());
         }
-        // start going up
-        else{
-            elevatorRectangle.setY( elevatorRectangle.getY() + direction);
-            System.out.println(elevatorRectangle.getY());
+        else{                                                                                                           // start going up
+            elevatorRectangle.setY(elevatorRectangle.getY() + direction);
             countLevel++;
-            currentLevelTextfield.setText(Integer.toString(countLevel));
-            System.out.println("Level: " + countLevel);
+        }
+        printLevelAndY();
+    }
+
+    private void printLevelAndY(){
+        currentLevelTextfield.setText(Integer.toString(countLevel));
+        System.out.println("Level: " + countLevel);
+        System.out.println(elevatorRectangle.getY());
+    }
+
+    private void startMaintenance() {
+        if(careTakerTicksTillMaintenanceTextField.getText().equals("0")) {
+            hasMaintenanceStarted = true;
+            Random rand = new Random();
+            this.roundsTillLeave = rand.nextInt(10) + 1;
+            System.out.println("Maintenance time:" + this.roundsTillLeave);
+            //this.inMaintenanceLabel.setText("IN MAINTENANCE!!!");
+        }
+    }
+
+    private void stopMaintenance(){
+        if(roundsTillLeave == 0) {
+            hasMaintenanceStarted = false;
+            this.inMaintenanceLabel.setText("");
+            this.careTakerTicksTillMaintenanceTextField.setText( this.ticksUntilMaintenanceEnterTextField.getText());
+            elevatorRectangle.setFill(Paint.valueOf("#81E6BB"));
         }
     }
 }
