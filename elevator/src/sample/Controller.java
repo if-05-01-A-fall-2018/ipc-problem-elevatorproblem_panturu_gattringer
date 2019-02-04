@@ -26,12 +26,6 @@ public class Controller extends Observable implements Initializable{
     private boolean hasMaintenanceStarted = false;
 
     @FXML
-    private Label passengerLabel;
-
-    @FXML
-    private Label currentLevelLabel;
-
-    @FXML
     private TextField passengerTextfield;
 
     @FXML
@@ -56,9 +50,6 @@ public class Controller extends Observable implements Initializable{
     public Label inMaintenanceLabel;
 
     @FXML
-    private Line verticalLine;
-
-    @FXML
     private Rectangle elevatorRectangle;
     private List<Passenger> waitingToEnter;
     private int roundsTillLeave = 0;
@@ -70,8 +61,6 @@ public class Controller extends Observable implements Initializable{
         this.passengerTextfield.setDisable(true);
         this.careTakerTicksTillMaintenanceTextField.setDisable(true);
         this.ticksUntilMaintenanceEnterTextField.setText("5");
-        this.peopleEnterPerTickTextField.setText("2");
-
     }
 
     public void startAnimationButtonPressed(ActionEvent actionEvent) {
@@ -93,14 +82,11 @@ public class Controller extends Observable implements Initializable{
 
     public void enterLiftButtonPressed() {
         if (waitingToEnter == null) waitingToEnter = new ArrayList<>();
-        try {
+        if(!peopleEnterPerTickTextField.getText().isEmpty()) {
             for (int i = 0; i < Integer.parseInt(peopleEnterPerTickTextField.getText()); i++) {
                 Passenger p = new Passenger();
                 waitingToEnter.add(p);
             }
-        }
-        catch(Exception e){
-
         }
         this.peopleWaitingToEnterTextField.setText(waitingToEnter.size()+"");
     }
@@ -111,31 +97,48 @@ public class Controller extends Observable implements Initializable{
             this.careTakerTicksTillMaintenanceTextField.setText(lastCare);
         }
         enterLiftButtonPressed();
-        System.out.println(hasMaintenanceStarted);
-        if(!hasMaintenanceStarted){
+        if(!hasMaintenanceStarted) notOnMaintenance();
+        else onMaintenance();
+        this.setChanged();
+        this.notifyObservers();
+        this.passengerTextfield.setText(""+ this.countObservers());
+    }
+
+    private void notOnMaintenance() {
+        if(!this.careTakerTicksTillMaintenanceTextField.getText().isEmpty()) {
             this.careTakerTicksTillMaintenanceTextField.setText(Integer.parseInt(careTakerTicksTillMaintenanceTextField.getText()) -1 +"");
-            startMaintenance();
-            moveElevator();
         }
-        if(waitingToEnter!= null && !waitingToEnter.isEmpty() && !hasMaintenanceStarted){
+        startMaintenance();
+        moveElevator();
+
+        if(waitingToEnter!= null && !waitingToEnter.isEmpty()){
             waitingToEnter.stream()
                     .forEach(x -> this.addObserver(x));
             waitingToEnter.clear();
         }
+    }
 
-        else if(hasMaintenanceStarted && this.countObservers() == 0){
+    private void onMaintenance(){
+        if(this.countObservers() == 0){
             roundsTillLeave--;
-            elevatorRectangle.setFill(Paint.valueOf("#A85858"));
-            this.inMaintenanceLabel.setText("IN MAINTENANCE!!!");
+            setLiftColor("#A85858");
+            setInMaintenanceLabelWithColorAndText("#A85858", "IN MAINTENANCE!!!");
             stopMaintenance();
         }
-        else if(hasMaintenanceStarted && this.countObservers() != 0){
-            this.inMaintenanceLabel.setText("People must go out!!!");
+        else if(this.countObservers() != 0){
+            setLiftColor("#E69045");
+            setInMaintenanceLabelWithColorAndText("#E69045", "People must go out!!!");
             moveElevator();
         }
-        this.setChanged();
-        this.notifyObservers();
-        this.passengerTextfield.setText(""+ this.countObservers());
+    }
+
+    private void setInMaintenanceLabelWithColorAndText(String color, String text){
+        this.inMaintenanceLabel.setTextFill(Paint.valueOf(color));
+        this.inMaintenanceLabel.setText(text);
+    }
+
+    private void setLiftColor(String color){
+        elevatorRectangle.setFill(Paint.valueOf(color));
     }
 
     private void moveElevator(){
@@ -170,9 +173,8 @@ public class Controller extends Observable implements Initializable{
         if(careTakerTicksTillMaintenanceTextField.getText().equals("0")) {
             hasMaintenanceStarted = true;
             Random rand = new Random();
-            this.roundsTillLeave = rand.nextInt(10) + 1;
+            this.roundsTillLeave = rand.nextInt(10) + 2;
             System.out.println("Maintenance time:" + this.roundsTillLeave);
-            //this.inMaintenanceLabel.setText("IN MAINTENANCE!!!");
         }
     }
 
